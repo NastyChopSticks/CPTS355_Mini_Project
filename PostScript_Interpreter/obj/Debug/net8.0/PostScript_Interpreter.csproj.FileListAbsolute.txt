@@ -1,0 +1,14 @@
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\bin\Debug\net8.0\PostScript_Interpreter.exe
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\bin\Debug\net8.0\PostScript_Interpreter.deps.json
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\bin\Debug\net8.0\PostScript_Interpreter.runtimeconfig.json
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\bin\Debug\net8.0\PostScript_Interpreter.dll
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\bin\Debug\net8.0\PostScript_Interpreter.pdb
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\PostScript_Interpreter.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\PostScript_Interpreter.AssemblyInfoInputs.cache
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\PostScript_Interpreter.AssemblyInfo.cs
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\PostScript_Interpreter.csproj.CoreCompileInputs.cache
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\PostScript_Interpreter.dll
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\refint\PostScript_Interpreter.dll
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\PostScript_Interpreter.pdb
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\PostScript_Interpreter.genruntimeconfig.cache
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\mini_project\PostScript_Interpreter\obj\Debug\net8.0\ref\PostScript_Interpreter.dll
