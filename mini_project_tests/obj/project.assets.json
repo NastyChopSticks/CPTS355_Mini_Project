@@ -1004,11 +1004,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\mini_project\\mini_project_tests\\mini_project_tests.csproj",
+      "projectUniqueName": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\CPTS355_Mini_Project\\mini_project_tests\\mini_project_tests.csproj",
       "projectName": "mini_project_tests",
-      "projectPath": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\mini_project\\mini_project_tests\\mini_project_tests.csproj",
+      "projectPath": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\CPTS355_Mini_Project\\mini_project_tests\\mini_project_tests.csproj",
       "packagesPath": "C:\\Users\\kaden\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\mini_project\\mini_project_tests\\obj\\",
+      "outputPath": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\CPTS355_Mini_Project\\mini_project_tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1029,8 +1029,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\mini_project\\PostScript_Interpreter\\PostScript_Interpreter.csproj": {
-              "projectPath": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\mini_project\\PostScript_Interpreter\\PostScript_Interpreter.csproj"
+            "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\CPTS355_Mini_Project\\PostScript_Interpreter\\PostScript_Interpreter.csproj": {
+              "projectPath": "C:\\Users\\kaden\\Desktop\\CPTS CLASSES\\CPTS355\\CPTS355_Mini_Project\\PostScript_Interpreter\\PostScript_Interpreter.csproj"
             }
           }
         }
