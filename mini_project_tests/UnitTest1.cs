@@ -189,5 +189,108 @@ namespace mini_project_tests
         //CODE BLOCK PARSER TESTS
     }
 
+    public class TokenizerTests
+    {
+        private void AssertTokens(string input, List<string> expected)
+        {
+            var result = Tokenizer.Tokenize(input);
+            Assert.AreEqual(expected, result);
+        }
+        [Test]
+        public void SimpleTokens()
+        {
+            AssertTokens("1 2 add", new List<string>
+            {
+                "1", "2", "add"
+            });
+        }
+
+        [Test]
+        public void ArrayToken()
+        {
+            AssertTokens("[1 2 3]", new List<string>
+            {
+                "[1 2 3]"
+            });
+        }
+
+        [Test]
+        public void ProcedureToken()
+        {
+            AssertTokens("{ 1 2 add }", new List<string>
+            {
+                "{ 1 2 add }"
+            });
+        }
+
+        [Test]
+        public void StringToken()
+        {
+            AssertTokens("(Hello, world)", new List<string>
+            {
+                "(Hello, world)"
+            });
+        }
+
+        [Test]
+        public void MixedTokens()
+        {
+            AssertTokens("1 [2 3] { add } (hi)", new List<string>
+            {
+                "1", "[2 3]", "{ add }", "(hi)"
+            });
+        }
+
+        [Test]
+        public void NestedArray()
+        {
+            AssertTokens("[1 [2 3] 4]", new List<string>
+            {
+                "[1 [2 3] 4]"
+            });
+        }
+
+        [Test]
+        public void NestedProcedure()
+        {
+            AssertTokens("{1 {2 add} 3}", new List<string>
+            {
+                "{1 {2 add} 3}"
+            });
+        }
+        [Test]
+        public void ExtraWhitespace()
+        {
+            AssertTokens("   1    2     add   ", new List<string>
+            {
+                "1", "2", "add"
+            });
+        }
+
+        [Test]
+        public void EmptyInput()
+        {
+            AssertTokens("", new List<string>());
+        }
+
+        [Test]
+        public void SingleToken()
+        {
+            AssertTokens("add", new List<string>
+            {
+                "add"
+            });
+        }
+
+        [Test]
+        public void StringWithSpaces()
+        {
+            AssertTokens("(Hello world test)", new List<string>
+            {
+                "(Hello world test)"
+            });
+        }
+
+    }
     
 }

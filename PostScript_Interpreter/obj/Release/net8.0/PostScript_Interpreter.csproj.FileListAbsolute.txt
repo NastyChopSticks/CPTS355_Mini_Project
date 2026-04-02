@@ -1,0 +1,15 @@
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\bin\Release\net8.0\PostScript_Interpreter.exe
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\bin\Release\net8.0\PostScript_Interpreter.deps.json
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\bin\Release\net8.0\PostScript_Interpreter.runtimeconfig.json
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\bin\Release\net8.0\PostScript_Interpreter.dll
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\bin\Release\net8.0\PostScript_Interpreter.pdb
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.AssemblyInfoInputs.cache
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.AssemblyInfo.cs
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.csproj.CoreCompileInputs.cache
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.sourcelink.json
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.dll
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\refint\PostScript_Interpreter.dll
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.pdb
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\PostScript_Interpreter.genruntimeconfig.cache
+C:\Users\kaden\Desktop\CPTS CLASSES\CPTS355\CPTS355_Mini_Project\PostScript_Interpreter\obj\Release\net8.0\ref\PostScript_Interpreter.dll

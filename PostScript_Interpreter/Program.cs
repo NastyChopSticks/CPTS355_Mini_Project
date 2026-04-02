@@ -1,15 +1,21 @@
 ﻿using System.Diagnostics;
+using System.Collections;
 using System.Reflection.Metadata.Ecma335;
 namespace Project;
+
+
 public class Program
 {
     public static void Main(string[] args)
     {
-        while(true)
+        
+        List<object> op_stack = new List<object>();
+        Parsers parser = new Parsers(new IParser[] { new BoolParser(), new NumParser(), new NameParser(), new ArrayParser(), new StringParser(), new CodeBlockParser() });
+        while (true)
         {
             Console.Write("REPL>");
             string input = Console.ReadLine();
-            string[] tokens = input.Split(' ');
+            List<string> tokens = Tokenizer.Tokenize(input);
             foreach (string token in tokens)
             {
                 if (token.ToLower() == "quit")
@@ -17,16 +23,131 @@ public class Program
                     Console.WriteLine("Exiting REPL...");
                     return;
                 }
+                object res = parser.Parse(token);
+                op_stack.Add(res);
+                Debug.WriteLine($"Parsed token: {token} -> {res}");
+                Debug.WriteLine($"Current op stack: {string.Join(" ", op_stack.Select(DebugFormatter.Format))}");
                 Console.WriteLine(token.ToLower());
             }
         }
     }
 }
 
+public static class DebugFormatter
+{
+    public static string Format(object obj)
+    {
+        if (obj == null) return "null";
 
+        // Strings should not be treated as IEnumerable
+        if (obj is string s)
+            return $"\"{s}\"";
 
+        if (obj is IEnumerable enumerable)
+        {
+            var items = enumerable.Cast<object>().ToList();
 
-public class BoolParser : IParser
+            // Check if this is a list of strings
+            bool isStringList = items.All(x => x is string);
+
+            var formattedItems = items.Select(Format);
+
+            string inner = string.Join(" ", formattedItems);
+
+            if (isStringList)
+                return "{" + inner + "}";   // string list
+            else
+                return "[" + inner + "]";   // other lists
+        }
+
+        return obj.ToString();
+    }
+}
+
+public class Parsers
+{
+    private readonly IEnumerable<IParser> _parsers;
+
+    public Parsers(IEnumerable<IParser> parsers)
+    {
+        _parsers = parsers;
+    }
+    public object Parse(string token)
+    {
+        
+        foreach (var parser in _parsers)
+        {
+            if (parser.TryParse(token, out object result))
+            {
+                return result;
+            }
+        }
+        throw new Exception($"Unable to parse token: {token}");
+    }
+}
+    public static class Tokenizer
+{
+    public static char Matching(char open)
+    {
+        return open switch
+        {
+            '[' => ']',
+            '{' => '}',
+            '(' => ')',
+            _ => throw new ArgumentException("Invalid opening delimiter")
+        };
+    }
+    public static List<string> Tokenize(string input)
+    {
+        List<string> tokens = new List<string>();
+        int i = 0;
+
+        while (i < input.Length)
+        {
+            if (char.IsWhiteSpace(input[i]))
+            {
+                i++;
+                continue;
+            }
+
+            char c = input[i];
+
+            // Handle grouped tokens
+            if (c == '[' || c == '{' || c == '(')
+            {
+                char open = c;
+                char close = Matching(c);
+
+                int start = i;
+                int depth = 1;
+                i++;
+
+                while (i < input.Length && depth > 0)
+                {
+                    if (input[i] == open) depth++;
+                    else if (input[i] == close) depth--;
+                    i++;
+                }
+
+                string token = input.Substring(start, i - start);
+                tokens.Add(token);
+            }
+            else
+            {
+                // Normal token
+                int start = i;
+
+                while (i < input.Length && !char.IsWhiteSpace(input[i]))
+                    i++;
+
+                tokens.Add(input.Substring(start, i - start));
+            }
+        }
+
+        return tokens;
+    }
+}
+    public class BoolParser : IParser
 {
     public bool TryParse(string token, out object result)
     {
