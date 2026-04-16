@@ -1,3 +1,5 @@
+using Microsoft.VisualStudio.TestPlatform.Utilities;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Project;
 
@@ -79,10 +81,10 @@ namespace mini_project_tests
         public void NameParser_Valid()
         {
             var parser = new NameParser();
-            bool success = parser.TryParse("\\hello", out object result);
+            bool success = parser.TryParse("/hello", out object result);
 
             Assert.IsTrue(success);
-            Assert.AreEqual("\\hello", result);
+            Assert.AreEqual("/hello", result);
         }
 
         [Test]
@@ -131,9 +133,9 @@ namespace mini_project_tests
             var list = result as List<object>;
             Assert.IsNotNull(list);
             Assert.AreEqual(3, list.Count);
-            Assert.AreEqual("1", list[0]);
-            Assert.AreEqual("2", list[1]);
-            Assert.AreEqual("3", list[2]);
+            Assert.AreEqual(1, list[0]);
+            Assert.AreEqual(2, list[1]);
+            Assert.AreEqual(3, list[2]);
         }
 
         [Test]
@@ -291,6 +293,254 @@ namespace mini_project_tests
             });
         }
 
+    }
+
+    
+    public class OperationTests
+    {
+        private StringWriter consoleOutput;
+        private TextWriter originalOutput;
+
+        [SetUp]
+        public void Setup()
+        {
+            Globals.op_stack = new List<object>();
+            Globals.dict_stack = new List<DictNode>();
+            PSDict.PopulateDict();
+            originalOutput = Console.Out;
+
+            consoleOutput = new StringWriter();
+            Console.SetOut(consoleOutput);
+
+        }
+        [TearDown]
+        public void TearDown()
+        {
+            Console.SetOut(originalOutput);  // RESTORE first
+            consoleOutput.Dispose();         // THEN dispose
+        }
+        [Test]
+        public void Add_Ints_PushesSum()
+        {
+            Globals.op_stack.Add(2);
+            Globals.op_stack.Add(3);
+
+            PSDict.Add_Operation();
+
+            Assert.AreEqual(1, Globals.op_stack.Count);
+            Assert.AreEqual(5, Globals.op_stack[0]);
+        }
+        [Test]
+        public void Add_Floats_PushesSum()
+        {
+            Globals.op_stack.Add(2.5f);
+            Globals.op_stack.Add(1.5f);
+
+            PSDict.Add_Operation();
+
+            Assert.AreEqual(1, Globals.op_stack.Count);
+            Assert.AreEqual(4f, Globals.op_stack[0]);
+        }
+        [Test]
+        public void Add_TooFewItems_Throws()
+        {
+            Globals.op_stack.Add(1);
+            PSDict.Add_Operation();
+            Assert.AreEqual(1, Globals.op_stack[0]);
+        }
+        [Test]
+        public void Add_MixedTypes()
+        {
+            Globals.op_stack.Add(1);
+            Globals.op_stack.Add(2.5f);
+            PSDict.Add_Operation();
+            Assert.AreEqual(1, Globals.op_stack.Count);
+            Assert.AreEqual(3.5, Globals.op_stack[0]);
+        }
+        [Test]
+        public void Def_ValidDefinition_AddsFunction()
+        {
+            Globals.op_stack.Add("/x");
+            Globals.op_stack.Add(42);
+
+            PSDict.Def_Operation();
+
+            Assert.IsEmpty(Globals.op_stack);
+            Assert.IsTrue(Globals.dict_stack[0].Data.ContainsKey("x"));
+        }
+        [Test]
+        public void Def_FunctionPushesValue()
+        {
+            Globals.op_stack.Add("/x");
+            Globals.op_stack.Add(99);
+
+            PSDict.Def_Operation();
+
+            Globals.dict_stack[0].Data["x"]();
+
+            Assert.AreEqual(1, Globals.op_stack.Count);
+            Assert.AreEqual(99, Globals.op_stack[0]);
+        }
+        [Test]
+        public void Def_NameWithoutBackslash()
+        {
+
+            InputProcessor.ProcessInput("x");
+            Globals.op_stack.Add(10);
+            PSDict.Def_Operation();
+            Assert.AreEqual(10, Globals.op_stack[0]);
+            Assert.AreEqual(1, Globals.op_stack.Count);
+        }
+        [Test]
+        public void Def_TooFewItems()
+        {
+            Globals.op_stack.Add("/x");
+
+            PSDict.Def_Operation();
+            Assert.AreEqual(1, Globals.op_stack.Count);
+            Assert.AreEqual("/x", Globals.op_stack[0]);
+
+        }
+
+        [Test]
+        public void Dict_Operation_StaticScoping_AddsParent()
+        {
+            // Arrange
+            DictNode parent = new DictNode();
+            Globals.dict_stack.Add(parent);
+
+            Globals.static_scoping = true;
+
+            // Act
+            PSDict.Dict_Operation();
+
+            // Assert
+            Assert.AreEqual(1, Globals.op_stack.Count);
+
+            var result = Globals.op_stack[0] as DictNode;
+            Assert.IsNotNull(result);
+
+            Assert.AreEqual(parent, result.Parent);
+        }
+        [Test]
+        public void Dict_Operation_DynamicScoping_DoesNotSetParent()
+        {
+            // Arrange
+            DictNode parent = new DictNode();
+            Globals.dict_stack.Add(parent);
+
+            Globals.static_scoping = false;
+
+            // Act
+            PSDict.Dict_Operation();
+
+            // Assert
+            var result = Globals.op_stack[0] as DictNode;
+            Assert.IsNotNull(result);
+
+            Assert.IsNull(result.Parent);
+        }
+        [Test]
+        public void Dict_Operation_AlwaysPushesNewDictNode()
+        {
+            // Arrange
+            Globals.static_scoping = true;
+
+            int before = Globals.op_stack.Count;
+
+            // Act
+            PSDict.Dict_Operation();
+
+            // Assert
+            Assert.AreEqual(before + 1, Globals.op_stack.Count);
+            Assert.IsInstanceOf<DictNode>(Globals.op_stack[Globals.op_stack.Count - 1]);
+        }
+        [Test]
+        public void Dict_Operation_UsesTopOfDictStackAsParent()
+        {
+            // Arrange
+            DictNode parent1 = new DictNode();
+            DictNode parent2 = new DictNode();
+
+            Globals.dict_stack.Add(parent1);
+            Globals.dict_stack.Add(parent2);
+
+            Globals.static_scoping = true;
+
+            // Act
+            PSDict.Dict_Operation();
+
+            // Assert
+            var child = Globals.op_stack[0] as DictNode;
+            Assert.AreEqual(parent2, child.Parent);
+        }
+        [Test]
+        public void Begin_Operation_EmptyStack_PrintsError()
+        {
+            // Arrange
+            Globals.op_stack.Clear();
+
+            // Act
+            PSDict.Begin_Operation();
+
+            // Assert
+            Assert.IsTrue(consoleOutput.ToString().Contains("Stack is empty!"));
+
+            // root dict must still exist (from Populate)
+            Assert.AreEqual(1, Globals.dict_stack.Count);
+        }
+        [Test]
+        public void Begin_Operation_TopIsDictNode_MovesToDictStack()
+        {
+            // Arrange
+            DictNode dict = new DictNode();
+            Globals.op_stack.Add(dict);
+
+            int before = Globals.dict_stack.Count;
+
+            // Act
+            PSDict.Begin_Operation();
+
+            // Assert
+            Assert.AreEqual(0, Globals.op_stack.Count);
+            Assert.AreEqual(before + 1, Globals.dict_stack.Count);
+            Assert.AreEqual(dict, Globals.dict_stack[Globals.dict_stack.Count - 1]);
+        }
+        [Test]
+        public void Begin_Operation_TopIsNotDictNode_PrintsErrorAndRemovesItem()
+        {
+            // Arrange
+            Globals.op_stack.Add(123);
+
+            int beforeDict = Globals.dict_stack.Count;
+
+            // Act
+            PSDict.Begin_Operation();
+
+            // Assert
+            Assert.AreEqual(0, Globals.op_stack.Count);
+            Assert.AreEqual(beforeDict, Globals.dict_stack.Count);
+
+            Assert.IsTrue(
+                consoleOutput.ToString().Contains("Begin operation requires a dictionary on top of stack")
+            );
+        }
+        [Test]
+        public void Begin_Operation_RemovesOnlyTopItem()
+        {
+            // Arrange
+            Globals.op_stack.Add("not a dict");
+            Globals.op_stack.Add(new DictNode());
+
+            int before = Globals.dict_stack.Count;
+
+            // Act
+            PSDict.Begin_Operation();
+
+            // Assert
+            Assert.AreEqual(1, Globals.op_stack.Count);
+            Assert.AreEqual(before + 1, Globals.dict_stack.Count);
+        }
     }
     
 }
