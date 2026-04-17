@@ -43,7 +43,8 @@ public class Program
                     Console.WriteLine("Switched to dynamic scoping mode");
                     continue;
                 }
-                InputProcessor.ProcessInput(token);
+                DictNode currentScope = Globals.dict_stack.Last();
+                InputProcessor.ProcessInput(token, currentScope);
 
                 Debug.WriteLine($"Current op stack: {string.Join(" ", Globals.op_stack.Select(DebugFormatter.Format))}");
             }
@@ -61,19 +62,55 @@ public class Globals
 
 public class DictNode
 {
-    public Dictionary<string, Action> Data = new();
+    public Dictionary<string, PSObject> Data = new();
     public DictNode Parent;
+
     public DictNode(DictNode parent = null)
     {
         Parent = parent;
     }
+
     public void SetParent(DictNode parent)
     {
         Parent = parent;
     }
-    public void Add(string key, Action value)
+
+    public void Add(string key, PSObject value)
     {
         Data[key] = value;
+    }
+}
+
+public abstract class PSObject { }
+public class PSBuiltin : PSObject
+{
+    public Action<DictNode> Action;
+
+    public PSBuiltin(Action<DictNode> action)
+    {
+        Action = action;
+    }
+}
+
+
+public class PSFunction : PSObject
+{
+    public List<string> Code;
+    public DictNode StaticLink;
+
+    public PSFunction(List<string> code, DictNode link)
+    {
+        Code = code;
+        StaticLink = link;
+    }
+}
+
+public class PSValue : PSObject
+{
+    public object Value;
+    public PSValue(object value)
+    {
+        Value = value;
     }
 }
 
@@ -81,54 +118,65 @@ public static class PSDict
 {
     public static void PopulateDict()
     {
+        Dictionary<string, PSObject> Data = new();
         Globals.dict_stack.Add(new DictNode());
-        Globals.dict_stack[0].Add("add", () => Add_Operation());
-        Globals.dict_stack[0].Add("def", () => Def_Operation());
-        Globals.dict_stack[0].Add("dict", () => Dict_Operation());
-        Globals.dict_stack[0].Add("begin", () => Begin_Operation());
-        Globals.dict_stack[0].Add("end", () => End_Operation());
-        Globals.dict_stack[0].Add("exch", () => Exch_Operation());
-        Globals.dict_stack[0].Add("=", () => EqualSignPrint_Operation());
-        Globals.dict_stack[0].Add("copy", () => Copy_Operation());
-        Globals.dict_stack[0].Add("dup", () => Dup_Operation());
-        Globals.dict_stack[0].Add("clear", () => Clear_Operation());
-        Globals.dict_stack[0].Add("count", () => Count_Operation());
-        Globals.dict_stack[0].Add("sub", () => Sub_Operation());
-        Globals.dict_stack[0].Add("mul", () => Mul_Operation());
-        Globals.dict_stack[0].Add("div", () => Div_Operation());
-        Globals.dict_stack[0].Add("idiv", () => Idiv_Operation());
-        Globals.dict_stack[0].Add("mod", () => Mod_Operation());
-        Globals.dict_stack[0].Add("abs", () => Abs_Operation());
-        Globals.dict_stack[0].Add("neg", () => Neg_Operation());
-        Globals.dict_stack[0].Add("ceiling", () => Ceiling_Operation());
-        Globals.dict_stack[0].Add("round", () => Round_Operation());
-        Globals.dict_stack[0].Add("sqrt", () => Sqrt_Operation());
-        Globals.dict_stack[0].Add("floor", () => Floor_Operation());
-        Globals.dict_stack[0].Add("length", () => Length_Operation());
-        Globals.dict_stack[0].Add("maxLength", () => MaxLength_Operation());
-        Globals.dict_stack[0].Add("get", () => Get_Operation());
-        Globals.dict_stack[0].Add("getinterval", () => GetInterval_Operation());
-        Globals.dict_stack[0].Add("putinterval", () => PutInterval_Operation());
-        Globals.dict_stack[0].Add("eq", () => Eq_Operation());
-        Globals.dict_stack[0].Add("ne", () => Ne_Operation());
-        Globals.dict_stack[0].Add("ge", () => Ge_Operation());
-        Globals.dict_stack[0].Add("gt", () => Gt_Operation());
-        Globals.dict_stack[0].Add("le", () => Le_Operation());
-        Globals.dict_stack[0].Add("lt", () => Lt_Operation());
-        Globals.dict_stack[0].Add("and", () => And_Operation());
-        Globals.dict_stack[0].Add("or", () => Or_Operation());
-        Globals.dict_stack[0].Add("not", () => Not_Operation());
-        Globals.dict_stack[0].Add("true", () => True_Operation());
-        Globals.dict_stack[0].Add("false", () => False_Operation());
-        Globals.dict_stack[0].Add("if", () => If_Operation());
-        Globals.dict_stack[0].Add("ifelse", () => IfElse_Operation());
-        Globals.dict_stack[0].Add("for", () => For_Operation());
-        Globals.dict_stack[0].Add("repeat", () => Repeat_Operation());
-        Globals.dict_stack[0].Add("print", () => Print_Operation());
-        Globals.dict_stack[0].Add("==", () => PostScriptPrint_Operation());
+        var d = Globals.dict_stack[0].Data;
+        d["add"] = new PSBuiltin(Add_Operation);
+        d["def"] = new PSBuiltin(Def_Operation);
+        d["dict"] = new PSBuiltin(Dict_Operation);
+
+        d["begin"] = new PSBuiltin(Begin_Operation);
+        d["end"] = new PSBuiltin(End_Operation);
+        d["exch"] = new PSBuiltin(Exch_Operation);
+        d["="] = new PSBuiltin(EqualSignPrint_Operation);
+
+        d["copy"] = new PSBuiltin(Copy_Operation);
+        d["dup"] = new PSBuiltin(Dup_Operation);
+        d["clear"] = new PSBuiltin(Clear_Operation);
+        d["count"] = new PSBuiltin(Count_Operation);
+
+        d["sub"] = new PSBuiltin(Sub_Operation);
+        d["mul"] = new PSBuiltin(Mul_Operation);
+        d["div"] = new PSBuiltin(Div_Operation);
+        d["idiv"] = new PSBuiltin(Idiv_Operation);
+        d["mod"] = new PSBuiltin(Mod_Operation);
+        d["abs"] = new PSBuiltin(Abs_Operation);
+        d["neg"] = new PSBuiltin(Neg_Operation);
+        d["ceiling"] = new PSBuiltin(Ceiling_Operation);
+        d["round"] = new PSBuiltin(Round_Operation);
+        d["sqrt"] = new PSBuiltin(Sqrt_Operation);
+        d["floor"] = new PSBuiltin(Floor_Operation);
+
+        d["length"] = new PSBuiltin(Length_Operation);
+        d["maxLength"] = new PSBuiltin(MaxLength_Operation);
+        d["get"] = new PSBuiltin(Get_Operation);
+        d["getinterval"] = new PSBuiltin(GetInterval_Operation);
+        d["putinterval"] = new PSBuiltin(PutInterval_Operation);
+
+        d["eq"] = new PSBuiltin(Eq_Operation);
+        d["ne"] = new PSBuiltin(Ne_Operation);
+        d["ge"] = new PSBuiltin(Ge_Operation);
+        d["gt"] = new PSBuiltin(Gt_Operation);
+        d["le"] = new PSBuiltin(Le_Operation);
+        d["lt"] = new PSBuiltin(Lt_Operation);
+
+        d["and"] = new PSBuiltin(And_Operation);
+        d["or"] = new PSBuiltin(Or_Operation);
+        d["not"] = new PSBuiltin(Not_Operation);
+
+        d["true"] = new PSBuiltin(True_Operation);
+        d["false"] = new PSBuiltin(False_Operation);
+
+        d["if"] = new PSBuiltin(If_Operation);
+        d["ifelse"] = new PSBuiltin(IfElse_Operation);
+        d["for"] = new PSBuiltin(For_Operation);
+        d["repeat"] = new PSBuiltin(Repeat_Operation);
+
+        d["print"] = new PSBuiltin(Print_Operation);
+        d["=="] = new PSBuiltin(PostScriptPrint_Operation);
     }
 
-    public static void Add_Operation()
+    public static void Add_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -154,24 +202,31 @@ public static class PSDict
         }
     }
 
-    public static void Def_Operation()
+    public static void Def_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
-            object value = Globals.op_stack[Globals.op_stack.Count - 1];
-            object name = Globals.op_stack[Globals.op_stack.Count - 2];
+            object value = Globals.op_stack[^1];
+            object name = Globals.op_stack[^2];
+
             if (name is string sname && sname.StartsWith("/"))
             {
                 Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
                 Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
-                string key = sname.Substring(1); // remove leading '/'
+
+                string key = sname.Substring(1);
+                DictNode currentDict = Globals.dict_stack[^1];
+
                 if (value is List<string> codeBlock)
                 {
-                    Globals.dict_stack[Globals.dict_stack.Count - 1].Add(key, () => InputProcessor.ExecuteBlock(codeBlock));
+                    currentDict.Data[key] = new PSFunction(codeBlock, currentDict);
                 }
                 else
                 {
-                    Globals.dict_stack[Globals.dict_stack.Count - 1].Add(key, () => Globals.op_stack.Add(value));
+                    if (value is PSValue v)
+                        currentDict.Data[key] = v;
+                    else
+                        currentDict.Data[key] = new PSValue(value);
                 }
             }
             else
@@ -184,7 +239,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to def operation");
         }
     }
-    public static void Dict_Operation()
+    public static void Dict_Operation(DictNode currentScope)
     {
         DictNode new_dict = new DictNode();
         if (Globals.static_scoping)
@@ -195,7 +250,7 @@ public static class PSDict
         Globals.op_stack.Add(new_dict);
 
     }
-    public static void Begin_Operation()
+    public static void Begin_Operation(DictNode currentScope )
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -215,7 +270,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void End_Operation()
+    public static void End_Operation(DictNode currentScope)
     {
         if (Globals.dict_stack.Count > 1)
         {
@@ -226,7 +281,7 @@ public static class PSDict
             Console.WriteLine("Cannot pop default dictionary");
         }
     }
-    public static void Exch_Operation()
+    public static void Exch_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -240,7 +295,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to exch operation");
         }
     }
-    public static void EqualSignPrint_Operation()
+    public static void EqualSignPrint_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -253,7 +308,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Copy_Operation()
+    public static void Copy_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -273,7 +328,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Dup_Operation()
+    public static void Dup_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -285,15 +340,15 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Clear_Operation()
+    public static void Clear_Operation(DictNode currentScope)
     {
         Globals.op_stack.Clear();
     }
-    public static void Count_Operation()
+    public static void Count_Operation(DictNode currentScope)
     {
         Globals.op_stack.Add(Globals.op_stack.Count);
     }
-    public static void Sub_Operation()
+    public static void Sub_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -318,7 +373,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to sub operation");
         }
     }
-    public static void Mul_Operation()
+    public static void Mul_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -343,7 +398,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to mul operation");
         }
     }
-    public static void Div_Operation()
+    public static void Div_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -389,7 +444,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to div operation");
         }
     }
-    public static void Idiv_Operation()
+    public static void Idiv_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -416,7 +471,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to idiv operation");
         }
     }
-    public static void Mod_Operation()
+    public static void Mod_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -440,7 +495,7 @@ public static class PSDict
             }
         }
     }
-    public static void Abs_Operation()
+    public static void Abs_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -467,7 +522,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Neg_Operation()
+    public static void Neg_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -494,7 +549,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Ceiling_Operation()
+    public static void Ceiling_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -521,7 +576,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Round_Operation()
+    public static void Round_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -548,7 +603,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Sqrt_Operation()
+    public static void Sqrt_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -591,7 +646,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Floor_Operation()
+    public static void Floor_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -618,41 +673,28 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void Length_Operation()
+    public static void Length_Operation(DictNode currentScope)
     {
+        if (Globals.op_stack.Count < 1)
+            return;
 
-        if (Globals.op_stack.Count >= 1)
+        object top = Globals.op_stack[^1];
+        Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
+
+        if (top is string s)
         {
-            if (Globals.op_stack[Globals.op_stack.Count - 1] is string)
-            {
-                string s = (string)Globals.op_stack[Globals.op_stack.Count - 1];
-                Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
-                Globals.op_stack.Add(s.Length);
-                return;
-            }
-            else
-            {
-
-                if (Globals.dict_stack.Count > 1)
-                {
-                    int count = 0;
-                    foreach (Action key in Globals.dict_stack[Globals.dict_stack.Count - 1].Data.Values)
-                    {
-                        count++;
-                    }
-                    Globals.op_stack.Add(count);
-                }
-                else
-                {
-                    Console.WriteLine("Invalid input, create a dictionary or call this command with a string!");
-                    return;
-                }
-            }
+            Globals.op_stack.Add(s.Length);
         }
-        
-
+        else if (top is List<object> list)
+        {
+            Globals.op_stack.Add(list.Count);
+        }
+        else
+        {
+            Console.WriteLine("length expects a string or array");
+        }
     }
-    public static void MaxLength_Operation()
+    public static void MaxLength_Operation(DictNode currentScope)
     {
         if (Globals.dict_stack.Count > 1)
         {
@@ -665,7 +707,7 @@ public static class PSDict
             return;
         }
     }
-    public static void Get_Operation()
+    public static void Get_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -707,7 +749,7 @@ public static class PSDict
             Console.WriteLine("get requires a string and an index!");
         }
     }
-    public static void GetInterval_Operation()
+    public static void GetInterval_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 3)
         {
@@ -740,7 +782,7 @@ public static class PSDict
             }
         }
     }
-    public static void PutInterval_Operation()
+    public static void PutInterval_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 3)
         {
@@ -773,7 +815,7 @@ public static class PSDict
             }
         }
     }
-    public static void Eq_Operation()
+    public static void Eq_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -788,7 +830,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to eq operation");
         }
     }
-    public static void Ne_Operation()
+    public static void Ne_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
@@ -810,7 +852,7 @@ public static class PSDict
         return obj is int || obj is float || obj is double;
     }
 
-    public static void Ge_Operation()
+    public static void Ge_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 2)
         {
@@ -847,7 +889,7 @@ public static class PSDict
 
         Console.WriteLine("ge requires two numbers or two strings");
     }
-    public static void Gt_Operation()
+    public static void Gt_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 2)
         {
@@ -884,7 +926,7 @@ public static class PSDict
 
         Console.WriteLine("gt requires two numbers or two strings");
     }
-    public static void Le_Operation()
+    public static void Le_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 2)
         {
@@ -921,7 +963,7 @@ public static class PSDict
 
         Console.WriteLine("le requires two numbers or two strings");
     }
-    public static void Lt_Operation()
+    public static void Lt_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 2)
         {
@@ -951,7 +993,7 @@ public static class PSDict
         }
         Console.WriteLine("lt requires two numbers or two strings");
     }
-    public static void And_Operation()
+    public static void And_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 2)
         {
@@ -982,7 +1024,7 @@ public static class PSDict
 
         Console.WriteLine("and requires two booleans or two integers");
     }
-    public static void Or_Operation()
+    public static void Or_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 2)
         {
@@ -1009,7 +1051,7 @@ public static class PSDict
         }
         Console.WriteLine("or requires two booleans or two integers");
     }
-    public static void Not_Operation()
+    public static void Not_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 1)
         {
@@ -1033,32 +1075,34 @@ public static class PSDict
         }
         Console.WriteLine("not requires a boolean or an integer");
     }
-    public static void True_Operation()
+    public static void True_Operation(DictNode currentScope)
     {
         Globals.op_stack.Add(true);
     }
-    public static void False_Operation()
+    public static void False_Operation(DictNode currentScope)
     {
         Globals.op_stack.Add(false);
     }
-    public static void If_Operation()
+    public static void If_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 2)
         {
-            object codeBlock = Globals.op_stack[Globals.op_stack.Count - 1];
-            object condition = Globals.op_stack[Globals.op_stack.Count - 2];
-            if (codeBlock is List<string> && condition is bool)
+            object codeBlock = Globals.op_stack[^1];
+            object condition = Globals.op_stack[^2];
+
+            if (codeBlock is List<string> block && condition is bool cond)
             {
                 Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
                 Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
-                if ((bool)condition)
+
+                if (cond)
                 {
-                    InputProcessor.ExecuteBlock((List<string>)codeBlock);
+                    InputProcessor.ExecuteBlock(block, currentScope);
                 }
             }
             else
             {
-                Console.WriteLine("if operation requires a code block on top of stack and a boolean below it");
+                Console.WriteLine("if operation requires a code block and a boolean");
             }
         }
         else
@@ -1066,30 +1110,34 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to if operation");
         }
     }
-    public static void IfElse_Operation()
+    public static void IfElse_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 3)
         {
-            object elseBlock = Globals.op_stack[Globals.op_stack.Count - 1];
-            object ifBlock = Globals.op_stack[Globals.op_stack.Count - 2];
-            object condition = Globals.op_stack[Globals.op_stack.Count - 3];
-            if (elseBlock is List<string> && ifBlock is List<string> && condition is bool)
+            object elseBlock = Globals.op_stack[^1];
+            object ifBlock = Globals.op_stack[^2];
+            object condition = Globals.op_stack[^3];
+
+            if (elseBlock is List<string> elseB &&
+                ifBlock is List<string> ifB &&
+                condition is bool cond)
             {
                 Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
                 Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
                 Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
-                if ((bool)condition)
+
+                if (cond)
                 {
-                    InputProcessor.ExecuteBlock((List<string>)ifBlock);
+                    InputProcessor.ExecuteBlock(ifB, currentScope);
                 }
                 else
                 {
-                    InputProcessor.ExecuteBlock((List<string>)elseBlock);
+                    InputProcessor.ExecuteBlock(elseB, currentScope);
                 }
             }
             else
             {
-                Console.WriteLine("ifelse operation requires two code blocks on top of stack and a boolean below them");
+                Console.WriteLine("ifelse operation requires two code blocks and a boolean");
             }
         }
         else
@@ -1097,7 +1145,7 @@ public static class PSDict
             Console.WriteLine("Not enough items on stack to ifelse operation");
         }
     }
-    public static void For_Operation()
+    public static void For_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 4)
         {
@@ -1128,7 +1176,7 @@ public static class PSDict
                 for (int i = s; i <= e; i += inc)
                 {
                     Globals.op_stack.Add(i);
-                    InputProcessor.ExecuteBlock(block);
+                    InputProcessor.ExecuteBlock(block, currentScope);
                 }
             }
             else
@@ -1136,7 +1184,7 @@ public static class PSDict
                 for (int i = s; i >= e; i += inc)
                 {
                     Globals.op_stack.Add(i);
-                    InputProcessor.ExecuteBlock(block);
+                    InputProcessor.ExecuteBlock(block, currentScope);
                 }
             }
 
@@ -1145,15 +1193,17 @@ public static class PSDict
 
         Console.WriteLine("Invalid types for for loop");
     }
-    public static void Repeat_Operation()
+    public static void Repeat_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count < 2)
         {
             Console.WriteLine("Not enough items for repeat loop");
             return;
         }
+
         object codeBlock = Globals.op_stack[^1];
         object count = Globals.op_stack[^2];
+
         if (codeBlock is List<string> block && count is int c)
         {
             if (c < 0)
@@ -1161,16 +1211,20 @@ public static class PSDict
                 Console.WriteLine("Count cannot be negative");
                 return;
             }
+
             Globals.op_stack.RemoveRange(Globals.op_stack.Count - 2, 2);
+
             for (int i = 0; i < c; i++)
             {
-                InputProcessor.ExecuteBlock(block);
+                InputProcessor.ExecuteBlock(block, currentScope);
             }
+
             return;
         }
+
         Console.WriteLine("Invalid types for repeat loop");
     }
-    public static void Print_Operation()
+    public static void Print_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -1191,7 +1245,7 @@ public static class PSDict
             Console.WriteLine("Stack is empty!");
         }
     }
-    public static void PostScriptPrint_Operation()
+    public static void PostScriptPrint_Operation(DictNode currentScope)
     {
         if (Globals.op_stack.Count >= 1)
         {
@@ -1210,91 +1264,107 @@ public static class InputProcessor
     private static Parsers parser = new Parsers(new IParser[] { new BoolParser(), new NumParser(), new NameParser(), new ArrayParser(), new StringParser(), new CodeBlockParser() });
 
     //Helper function for get variables when trying to resolve array vars
-    public static bool Get_Var(string token)
+    public static bool Get_Var(string token, DictNode startScope, out PSObject result)
     {
         if (!Globals.static_scoping)
         {
             foreach (DictNode dict in Globals.dict_stack.AsEnumerable().Reverse())
             {
-                if (dict.Data.ContainsKey(token))
+                if (dict.Data.TryGetValue(token, out result))
                 {
-                    dict.Data[token]();
                     return true;
                 }
             }
-            return false;
         }
         else
         {
-            DictNode currentScope = Globals.dict_stack[Globals.dict_stack.Count - 1];
-            while (currentScope != null)
-            {
-                if (currentScope.Data.ContainsKey(token))
-                {
-                    currentScope.Data[token]();
-                    return true;
-                }
-                currentScope = currentScope.Parent;
-            }
-            return false; ;
-        }
-    }
-    public static void Dictionary_Lookup(string token)
-    {
-        if (!Globals.static_scoping)
-        {
-            foreach (DictNode dict in Globals.dict_stack.AsEnumerable().Reverse())
-            {
-                if (dict.Data.ContainsKey(token))
-                {
-                    dict.Data[token]();
-                    Debug.WriteLine("Found operation in dictionary");
-                    return;
-                }
-            }
-            Debug.WriteLine("Couldn't find operation in dict");
-            Console.WriteLine("Unknown command");
-        }
-        else
-        {
-            DictNode currentScope = Globals.dict_stack[Globals.dict_stack.Count - 1];
-            while (currentScope != null)
-            {
-                if (currentScope.Data.ContainsKey(token))
-                {
-                    currentScope.Data[token]();
-                    Debug.WriteLine("Found operation in dictionary");
-                    return;
-                }
-                currentScope = currentScope.Parent;
-            }
-            Debug.WriteLine("Couldn't find operation in dict");
-            Console.WriteLine("Unknown command");
-        }
-    }
-    public static void ProcessInput(string token)
-    {
+            DictNode currentScope = startScope;
 
-        //try to parse as constatn
-        object res = parser.Parse(token);
+            while (currentScope != null)
+            {
+                if (currentScope.Data.TryGetValue(token, out result))
+                {
+                    return true;
+                }
+                currentScope = currentScope.Parent;
+            }
+        }
+
+        result = null;
+        return false;
+    }
+    public static void Dictionary_Lookup(string token, DictNode startScope)
+    {
+        PSObject obj = null;
+
+        if (!Globals.static_scoping)
+        {
+            foreach (DictNode dict in Globals.dict_stack.AsEnumerable().Reverse())
+            {
+                if (dict.Data.TryGetValue(token, out obj))
+                {
+                    ExecutePSObject(obj, dict);
+                    return;
+                }
+            }
+        }
+        else
+        {
+            DictNode currentScope = startScope;
+
+            while (currentScope != null)
+            {
+                if (currentScope.Data.TryGetValue(token, out obj))
+                {
+                    ExecutePSObject(obj, currentScope);
+                    return;
+                }
+                currentScope = currentScope.Parent;
+            }
+        }
+
+        Console.WriteLine("Unknown command");
+    }
+    public static void ProcessInput(string token, DictNode currentScope)
+    {
+        object res = parser.Parse(token, currentScope);
+
         if (res != null)
         {
             Globals.op_stack.Add(res);
         }
         else
         {
-            Dictionary_Lookup(token);
+            Dictionary_Lookup(token, currentScope);
         }
     }
-    public static void ExecuteBlock(List<string> tokens)
+    public static void ExecutePSObject(PSObject obj, DictNode currentScope)
     {
+        switch (obj)
+        {
+            case PSBuiltin builtin:
+                builtin.Action(currentScope);
+                break;
+
+            case PSFunction func:
+                ExecuteBlock(func.Code, func.StaticLink); 
+
+                break;
+
+            case PSValue val:
+                Globals.op_stack.Add(val.Value);
+                break;
+        }
+    }
+    public static void ExecuteBlock(List<string> tokens, DictNode startScope)
+    {
+        DictNode currentScope = startScope;
+
         foreach (string token in tokens)
         {
-            InputProcessor.ProcessInput(token);
+            InputProcessor.ProcessInput(token, currentScope);
         }
     }
-
-    
 }
 
 public static class DebugFormatter
@@ -1330,7 +1400,9 @@ public static class DebugFormatter
     {
         if (obj == null) return "null";
 
-        
+        if (obj is PSValue v)
+            return PostScriptFormat(v.Value);
+
         if (obj is string s)
             return s;
 
@@ -1338,7 +1410,6 @@ public static class DebugFormatter
         {
             var items = enumerable.Cast<object>().ToList();
 
-            // Check if this is a list of strings
             bool isStringList = items.All(x => x is string);
 
             var formattedItems = items.Select(PostScriptFormat);
@@ -1346,9 +1417,9 @@ public static class DebugFormatter
             string inner = string.Join(" ", formattedItems);
 
             if (isStringList)
-                return "{" + inner + "}";   // string list
+                return "{" + inner + "}";
             else
-                return "[" + inner + "]";   // other lists
+                return "[" + inner + "]";
         }
 
         return obj.ToString();
@@ -1364,12 +1435,12 @@ public class Parsers
     {
         _parsers = parsers;
     }
-    public object Parse(string token)
+    public object Parse(string token, DictNode currentScope)
     {
         
         foreach (var parser in _parsers)
         {
-            if (parser.TryParse(token, out object result))
+            if (parser.TryParse(token, currentScope, out object result))
             {
                 return result;
             }
@@ -1443,7 +1514,7 @@ public static class Tokenizer
 
 public class BoolParser : IParser
 {
-    public bool TryParse(string token, out object result)
+    public bool TryParse(string token, DictNode currentScope, out object result)
     {
         Debug.WriteLine("Attempting to bool parse token: " + token);
         if (token.ToLower() == "true")
@@ -1466,7 +1537,7 @@ public class BoolParser : IParser
 
 public class NumParser : IParser
 {
-    public bool TryParse(string token, out object result)
+    public bool TryParse(string token, DictNode currentScope, out object result)
     {
         Debug.WriteLine("Attempting to number parse token: " + token);
 
@@ -1491,7 +1562,7 @@ public class NumParser : IParser
 
 public class NameParser : IParser
 {
-    public bool TryParse(string token, out object result)
+    public bool TryParse(string token, DictNode currentScope, out object result)
     {
         Debug.WriteLine("Attempting to parse constant token: " + token);
         if (token.ToLower()[0] != '/')
@@ -1506,7 +1577,7 @@ public class NameParser : IParser
 
 public class ArrayParser : IParser
 {
-    public bool TryParse(string token, out object result)
+    public bool TryParse(string token, DictNode currentScope, out object result)
     {
         token = token.Trim();
 
@@ -1546,12 +1617,9 @@ public class ArrayParser : IParser
             {
                 //we basically need to check if the input is a variable in the dictionary
                 //Get_Var will call the def operation and automatically add the value to the stack.
-                if(InputProcessor.Get_Var(part))
+                if (InputProcessor.Get_Var(part, currentScope, out PSObject value))
                 {
-                    //add the newly added value
-                    list.Add(Globals.op_stack[Globals.op_stack.Count - 1]);
-                    //remove it from the stack
-                    Globals.op_stack.RemoveAt(Globals.op_stack.Count - 1);
+                    list.Add(value);
                 }
                 else
                 {
@@ -1568,7 +1636,7 @@ public class ArrayParser : IParser
 
 public class StringParser : IParser
 {
-    public bool TryParse(string token, out object result)
+    public bool TryParse(string token, DictNode currentScope, out object result)
     {
         Debug.WriteLine("Attempting to string parse token: " + token);
 
@@ -1590,7 +1658,7 @@ public class StringParser : IParser
 
 public class CodeBlockParser : IParser
 {
-    public bool TryParse(string token, out object result)
+    public bool TryParse(string token, DictNode currentScope, out object result)
     {
         token = token.Trim();
 
@@ -1657,5 +1725,5 @@ public class CodeBlockParser : IParser
 
 public interface IParser
 {
-    bool TryParse(string token, out object result);
+    bool TryParse(string token, DictNode currentScope, out object result);
 }

@@ -17,8 +17,9 @@ namespace mini_project_tests
         [Test]
         public void BoolParser_ValidTrue()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new BoolParser();
-            bool success = parser.TryParse("true", out object result);
+            bool success = parser.TryParse("true", currentScope, out object result);
 
             Assert.IsTrue(success);
             Assert.AreEqual(true, result);
@@ -27,8 +28,9 @@ namespace mini_project_tests
         [Test]
         public void BoolParser_ValidFalse()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new BoolParser();
-            bool success = parser.TryParse("false", out object result);
+            bool success = parser.TryParse("false", currentScope, out object result);
 
             Assert.IsTrue(success);
             Assert.AreEqual(false, result);
@@ -37,8 +39,9 @@ namespace mini_project_tests
         [Test]
         public void BoolParser_Invalid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new BoolParser();
-            bool success = parser.TryParse("hello", out object result);
+            bool success = parser.TryParse("hello", currentScope, out object result);
 
             Assert.IsFalse(success);
             Assert.IsNull(result);
@@ -50,8 +53,9 @@ namespace mini_project_tests
         [Test]
         public void NumParser_Int()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new NumParser();
-            bool success = parser.TryParse("42", out object result);
+            bool success = parser.TryParse("42", currentScope, out object result);
 
             Assert.IsTrue(success);
             Assert.AreEqual(42, result);
@@ -60,8 +64,9 @@ namespace mini_project_tests
         [Test]
         public void NumParser_Double()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new NumParser();
-            bool success = parser.TryParse("3.14", out object result);
+            bool success = parser.TryParse("3.14", currentScope, out object result);
 
             Assert.IsTrue(success);
             Assert.AreEqual(3.14, result);
@@ -70,8 +75,9 @@ namespace mini_project_tests
         [Test]
         public void NumParser_Invalid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new NumParser();
-            bool success = parser.TryParse("abc", out object result);
+            bool success = parser.TryParse("abc", currentScope, out object result);
 
             Assert.IsFalse(success);
             Assert.IsNull(result);
@@ -80,8 +86,9 @@ namespace mini_project_tests
         [Test]
         public void NameParser_Valid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new NameParser();
-            bool success = parser.TryParse("/hello", out object result);
+            bool success = parser.TryParse("/hello", currentScope, out object result);
 
             Assert.IsTrue(success);
             Assert.AreEqual("/hello", result);
@@ -90,8 +97,9 @@ namespace mini_project_tests
         [Test]
         public void NameParser_Invalid_NoBackslash()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new NameParser();
-            bool success = parser.TryParse("hello", out object result);
+            bool success = parser.TryParse("hello", currentScope, out object result);
 
             Assert.IsFalse(success);
             Assert.IsNull(result);
@@ -103,8 +111,9 @@ namespace mini_project_tests
         [Test]
         public void StringParser_Valid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new StringParser();
-            bool success = parser.TryParse("(Hello World)", out object result);
+            bool success = parser.TryParse("(Hello World)", currentScope, out object result);
 
             Assert.IsTrue(success);
             Assert.AreEqual("Hello World", result);
@@ -113,8 +122,9 @@ namespace mini_project_tests
         [Test]
         public void StringParser_Invalid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new StringParser();
-            bool success = parser.TryParse("Hello World", out object result);
+            bool success = parser.TryParse("Hello World", currentScope, out object result);
 
             Assert.IsFalse(success);
             Assert.IsNull(result);
@@ -125,8 +135,9 @@ namespace mini_project_tests
         [Test]
         public void ArrayParser_Valid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new ArrayParser();
-            bool success = parser.TryParse("[1 2 3]", out object result);
+            bool success = parser.TryParse("[1 2 3]", currentScope, out object result);
 
             Assert.IsTrue(success);
 
@@ -141,8 +152,9 @@ namespace mini_project_tests
         [Test]
         public void ArrayParser_Empty()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new ArrayParser();
-            bool success = parser.TryParse("[]", out object result);
+            bool success = parser.TryParse("[]", currentScope, out object result);
 
             Assert.IsTrue(success);
 
@@ -154,8 +166,9 @@ namespace mini_project_tests
         [Test]
         public void ArrayParser_Invalid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new ArrayParser();
-            bool success = parser.TryParse("1 2 3", out object result);
+            bool success = parser.TryParse("1 2 3", currentScope, out object result);
 
             Assert.IsFalse(success);
             Assert.IsNull(result);
@@ -166,8 +179,9 @@ namespace mini_project_tests
         [Test]
         public void CodeBlockParser_Valid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new CodeBlockParser();
-            bool success = parser.TryParse("{1 2 add}", out object result);
+            bool success = parser.TryParse("{1 2 add}", currentScope, out object result);
 
             Assert.IsTrue(success);
 
@@ -182,8 +196,9 @@ namespace mini_project_tests
         [Test]
         public void CodeBlockParser_Invalid()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
             var parser = new CodeBlockParser();
-            bool success = parser.TryParse("1 2 add", out object result);
+            bool success = parser.TryParse("1 2 add", currentScope, out object result);
 
             Assert.IsFalse(success);
             Assert.IsNull(result);
@@ -295,7 +310,7 @@ namespace mini_project_tests
 
     }
 
-    
+
     public class OperationTests
     {
         private StringWriter consoleOutput;
@@ -306,159 +321,173 @@ namespace mini_project_tests
         {
             Globals.op_stack = new List<object>();
             Globals.dict_stack = new List<DictNode>();
-            PSDict.PopulateDict();
-            originalOutput = Console.Out;
 
+            PSDict.PopulateDict();
+
+            originalOutput = Console.Out;
             consoleOutput = new StringWriter();
             Console.SetOut(consoleOutput);
-
         }
+
         [TearDown]
         public void TearDown()
         {
-            Console.SetOut(originalOutput);  // RESTORE first
-            consoleOutput.Dispose();         // THEN dispose
+            Console.SetOut(originalOutput);
+            consoleOutput.Dispose();
         }
+
+        // ================= ADD =================
+
         [Test]
         public void Add_Ints_PushesSum()
         {
             Globals.op_stack.Add(2);
             Globals.op_stack.Add(3);
 
-            PSDict.Add_Operation();
+            PSDict.Add_Operation(Globals.dict_stack[^1]);
 
             Assert.AreEqual(1, Globals.op_stack.Count);
             Assert.AreEqual(5, Globals.op_stack[0]);
         }
+
         [Test]
         public void Add_Floats_PushesSum()
         {
             Globals.op_stack.Add(2.5f);
             Globals.op_stack.Add(1.5f);
 
-            PSDict.Add_Operation();
+            PSDict.Add_Operation(Globals.dict_stack[^1]);
 
             Assert.AreEqual(1, Globals.op_stack.Count);
             Assert.AreEqual(4f, Globals.op_stack[0]);
         }
+
         [Test]
-        public void Add_TooFewItems_Throws()
+        public void Add_TooFewItems_LeavesStackUnchanged()
         {
             Globals.op_stack.Add(1);
-            PSDict.Add_Operation();
+
+            PSDict.Add_Operation(Globals.dict_stack[^1]);
+
+            Assert.AreEqual(1, Globals.op_stack.Count);
             Assert.AreEqual(1, Globals.op_stack[0]);
         }
+
         [Test]
         public void Add_MixedTypes()
         {
             Globals.op_stack.Add(1);
             Globals.op_stack.Add(2.5f);
-            PSDict.Add_Operation();
+
+            PSDict.Add_Operation(Globals.dict_stack[^1]);
+
             Assert.AreEqual(1, Globals.op_stack.Count);
             Assert.AreEqual(3.5, Globals.op_stack[0]);
         }
+
+        // ================= DEF =================
+
         [Test]
-        public void Def_ValidDefinition_AddsFunction()
+        public void Def_ValidDefinition_AddsValue()
         {
             Globals.op_stack.Add("/x");
             Globals.op_stack.Add(42);
 
-            PSDict.Def_Operation();
+            PSDict.Def_Operation(Globals.dict_stack[^1]);
 
             Assert.IsEmpty(Globals.op_stack);
-            Assert.IsTrue(Globals.dict_stack[0].Data.ContainsKey("x"));
+            Assert.IsTrue(Globals.dict_stack[^1].Data.ContainsKey("x"));
         }
+
         [Test]
         public void Def_FunctionPushesValue()
         {
             Globals.op_stack.Add("/x");
-            Globals.op_stack.Add(99);
+            Globals.op_stack.Add(new PSValue(99));
 
-            PSDict.Def_Operation();
+            PSDict.Def_Operation(Globals.dict_stack[^1]);
 
-            Globals.dict_stack[0].Data["x"]();
+            var stored = (PSValue)Globals.dict_stack[^1].Data["x"];
+            
 
-            Assert.AreEqual(1, Globals.op_stack.Count);
-            Assert.AreEqual(99, Globals.op_stack[0]);
+            Assert.AreEqual(99, stored.Value);
+            Assert.AreEqual(0, Globals.op_stack.Count);
         }
+
         [Test]
         public void Def_NameWithoutBackslash()
         {
+            DictNode currentScope = Globals.dict_stack[^1];
+            InputProcessor.ProcessInput("x", currentScope);
 
-            InputProcessor.ProcessInput("x");
             Globals.op_stack.Add(10);
-            PSDict.Def_Operation();
-            Assert.AreEqual(10, Globals.op_stack[0]);
+            PSDict.Def_Operation(Globals.dict_stack[^1]);
+
             Assert.AreEqual(1, Globals.op_stack.Count);
+            Assert.AreEqual(10, Globals.op_stack[0]);
         }
+
         [Test]
         public void Def_TooFewItems()
         {
             Globals.op_stack.Add("/x");
 
-            PSDict.Def_Operation();
+            PSDict.Def_Operation(Globals.dict_stack[^1]);
+
             Assert.AreEqual(1, Globals.op_stack.Count);
             Assert.AreEqual("/x", Globals.op_stack[0]);
-
         }
+
+        // ================= DICT =================
 
         [Test]
         public void Dict_Operation_StaticScoping_AddsParent()
         {
-            // Arrange
             DictNode parent = new DictNode();
             Globals.dict_stack.Add(parent);
 
             Globals.static_scoping = true;
 
-            // Act
-            PSDict.Dict_Operation();
-
-            // Assert
-            Assert.AreEqual(1, Globals.op_stack.Count);
+            PSDict.Dict_Operation(Globals.dict_stack[^1]);
 
             var result = Globals.op_stack[0] as DictNode;
-            Assert.IsNotNull(result);
 
+            Assert.IsNotNull(result);
             Assert.AreEqual(parent, result.Parent);
         }
+
         [Test]
         public void Dict_Operation_DynamicScoping_DoesNotSetParent()
         {
-            // Arrange
             DictNode parent = new DictNode();
             Globals.dict_stack.Add(parent);
 
             Globals.static_scoping = false;
 
-            // Act
-            PSDict.Dict_Operation();
+            PSDict.Dict_Operation(Globals.dict_stack[^1]);
 
-            // Assert
             var result = Globals.op_stack[0] as DictNode;
-            Assert.IsNotNull(result);
 
+            Assert.IsNotNull(result);
             Assert.IsNull(result.Parent);
         }
+
         [Test]
         public void Dict_Operation_AlwaysPushesNewDictNode()
         {
-            // Arrange
             Globals.static_scoping = true;
 
             int before = Globals.op_stack.Count;
 
-            // Act
-            PSDict.Dict_Operation();
+            PSDict.Dict_Operation(Globals.dict_stack[^1]);
 
-            // Assert
             Assert.AreEqual(before + 1, Globals.op_stack.Count);
-            Assert.IsInstanceOf<DictNode>(Globals.op_stack[Globals.op_stack.Count - 1]);
+            Assert.IsInstanceOf<DictNode>(Globals.op_stack[^1]);
         }
+
         [Test]
         public void Dict_Operation_UsesTopOfDictStackAsParent()
         {
-            // Arrange
             DictNode parent1 = new DictNode();
             DictNode parent2 = new DictNode();
 
@@ -467,80 +496,70 @@ namespace mini_project_tests
 
             Globals.static_scoping = true;
 
-            // Act
-            PSDict.Dict_Operation();
+            PSDict.Dict_Operation(Globals.dict_stack[^1]);
 
-            // Assert
             var child = Globals.op_stack[0] as DictNode;
+
             Assert.AreEqual(parent2, child.Parent);
         }
+
+        // ================= BEGIN =================
+
         [Test]
         public void Begin_Operation_EmptyStack_PrintsError()
         {
-            // Arrange
             Globals.op_stack.Clear();
 
-            // Act
-            PSDict.Begin_Operation();
+            PSDict.Begin_Operation(Globals.dict_stack[^1]);
 
-            // Assert
             Assert.IsTrue(consoleOutput.ToString().Contains("Stack is empty!"));
-
-            // root dict must still exist (from Populate)
             Assert.AreEqual(1, Globals.dict_stack.Count);
         }
+
         [Test]
         public void Begin_Operation_TopIsDictNode_MovesToDictStack()
         {
-            // Arrange
             DictNode dict = new DictNode();
             Globals.op_stack.Add(dict);
 
             int before = Globals.dict_stack.Count;
 
-            // Act
-            PSDict.Begin_Operation();
+            PSDict.Begin_Operation(Globals.dict_stack[^1]);
 
-            // Assert
             Assert.AreEqual(0, Globals.op_stack.Count);
             Assert.AreEqual(before + 1, Globals.dict_stack.Count);
-            Assert.AreEqual(dict, Globals.dict_stack[Globals.dict_stack.Count - 1]);
+            Assert.AreEqual(dict, Globals.dict_stack[^1]);
         }
+
         [Test]
-        public void Begin_Operation_TopIsNotDictNode_PrintsErrorAndRemovesItem()
+        public void Begin_Operation_TopIsNotDictNode_PrintsError()
         {
-            // Arrange
             Globals.op_stack.Add(123);
 
-            int beforeDict = Globals.dict_stack.Count;
+            int before = Globals.dict_stack.Count;
 
-            // Act
-            PSDict.Begin_Operation();
+            PSDict.Begin_Operation(Globals.dict_stack[^1]);
 
-            // Assert
             Assert.AreEqual(0, Globals.op_stack.Count);
-            Assert.AreEqual(beforeDict, Globals.dict_stack.Count);
+            Assert.AreEqual(before, Globals.dict_stack.Count);
 
-            Assert.IsTrue(
-                consoleOutput.ToString().Contains("Begin operation requires a dictionary on top of stack")
-            );
+            Assert.IsTrue(consoleOutput.ToString()
+                .Contains("Begin operation requires a dictionary on top of stack"));
         }
+
         [Test]
         public void Begin_Operation_RemovesOnlyTopItem()
         {
-            // Arrange
             Globals.op_stack.Add("not a dict");
             Globals.op_stack.Add(new DictNode());
 
             int before = Globals.dict_stack.Count;
 
-            // Act
-            PSDict.Begin_Operation();
+            PSDict.Begin_Operation(Globals.dict_stack[^1]);
 
-            // Assert
             Assert.AreEqual(1, Globals.op_stack.Count);
             Assert.AreEqual(before + 1, Globals.dict_stack.Count);
         }
     }
-    
+
 }
