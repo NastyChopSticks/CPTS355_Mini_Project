@@ -147,6 +147,6 @@ brew install --cask dotnet-sdk@8
 cd CPTS355_Mini_Project/PostScript_Interpreter
 dotnet run
 ---
-
+```
 ## Notes
 This is a learning-focused implementation and should not be considered production-ready.
