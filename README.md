@@ -123,10 +123,29 @@ This project was built to explore:
 ---
 
 ## Getting Started
-1. Clone the repository  
-2. Open the solution in Visual Studio  
-3. Build and run the project  
 
+### 🪟 Windows
+
+**Option 1: Using Visual Studio**
+1. Clone the repository  
+2. Navigate to: CPTS355_Mini_Project/PostScript_Interpreter
+3. Open `PostScript_Interpreter.sln` in Visual Studio  
+4. Build and run the project  
+
+**Option 2: Running the compiled executable**
+1. Clone the repository  
+2. Navigate to: CPTS355_Mini_Project/PostScript_Interpreter/bin/Debug/net8.0
+3. Run the `.exe` file  
+
+---
+
+### 🍎 macOS
+
+**Install dependencies**
+```bash
+brew install --cask dotnet-sdk@8
+cd CPTS355_Mini_Project/PostScript_Interpreter
+dotnet run
 ---
 
 ## Notes
