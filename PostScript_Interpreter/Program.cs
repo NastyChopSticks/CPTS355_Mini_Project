@@ -1158,40 +1158,38 @@ public static class PSDict
         object increment = Globals.op_stack[^3];
         object start = Globals.op_stack[^4];
 
-        Globals.op_stack.RemoveRange(Globals.op_stack.Count - 4, 4);
-
-        if (codeBlock is List<string> block &&
-            increment is int inc &&
-            end is int e &&
-            start is int s)
+        if (codeBlock is not List<string> block ||
+            increment is not int inc ||
+            end is not int e ||
+            start is not int s)
         {
-            if (inc == 0)
-            {
-                Console.WriteLine("Increment cannot be zero");
-                return;
-            }
-
-            if (inc > 0)
-            {
-                for (int i = s; i <= e; i += inc)
-                {
-                    Globals.op_stack.Add(i);
-                    InputProcessor.ExecuteBlock(block, currentScope);
-                }
-            }
-            else
-            {
-                for (int i = s; i >= e; i += inc)
-                {
-                    Globals.op_stack.Add(i);
-                    InputProcessor.ExecuteBlock(block, currentScope);
-                }
-            }
-
+            Console.WriteLine("Invalid types for for loop");
             return;
         }
 
-        Console.WriteLine("Invalid types for for loop");
+        if (inc == 0)
+        {
+            Console.WriteLine("Increment cannot be zero");
+            return;
+        }
+        Globals.op_stack.RemoveRange(Globals.op_stack.Count - 4, 4);
+
+        if (inc > 0)
+        {
+            for (int i = s; i <= e; i += inc)
+            {
+                Globals.op_stack.Add(i);
+                InputProcessor.ExecuteBlock(block, currentScope);
+            }
+        }
+        else
+        {
+            for (int i = s; i >= e; i += inc)
+            {
+                Globals.op_stack.Add(i);
+                InputProcessor.ExecuteBlock(block, currentScope);
+            }
+        }
     }
     public static void Repeat_Operation(DictNode currentScope)
     {

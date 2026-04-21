@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PostScript_Interpreter")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a868d0242e1ccc773130875501569957743b58a9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+351fe8b80cde2011ef8ef0cab5b3f8d658ef8314")]
 [assembly: System.Reflection.AssemblyProductAttribute("PostScript_Interpreter")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PostScript_Interpreter")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
